@@ -6,8 +6,8 @@
 *.test
 *.prof
 
-bin
-data
+bin/
+data/
 config/queue.xml
 .idea
 *.iml
