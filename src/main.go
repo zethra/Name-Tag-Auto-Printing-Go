@@ -9,18 +9,18 @@ import (
 	"html/template"
 	"log"
 
-//	"ntap/data"
+	"ntap/data"
 	"ntap/config"
 	"ntap/service"
 
 	"github.com/kardianos/osext"
 	"path"
+	"github.com/satori/go.uuid"
 )
 
 var configImpl config.Config
 
 func main() {
-
 	//Get Bim directory path
 	filename, _ := osext.Executable()
 	var pos int
@@ -67,14 +67,20 @@ func main() {
 		os.Create(configImpl.QueueFile)
 	}
 
-//	nameTag := data.NameTag{Name:"Ben"}
-//	nameTag.Export(&configImpl)
+	nameTagQueue := data.NewNameTagQueue()
+	nameTagQueue.Load(&configImpl)
+	fmt.Printf("%v\n", nameTagQueue)
+
+	nameTagQueue.Add(data.NameTag{Name:"Ben",Id:uuid.NewV1()})
+	nameTagQueue.Add(data.NameTag{Name:"Ben",Id:uuid.NewV1()})
+	nameTagQueue.Add(data.NameTag{Name:"Ben",Id:uuid.NewV1()})
+	nameTagQueue.Save(&configImpl)
 
 	//Start HTTP Server
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+/*	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 	http.HandleFunc("/", serveTemplate)
 	http.HandleFunc("/preview", preview)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", nil)*/
 }
 
 func preview(writer http.ResponseWriter, request *http.Request) {
