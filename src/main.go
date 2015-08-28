@@ -15,13 +15,17 @@ import (
 
 	"github.com/kardianos/osext"
 	"path"
-	"github.com/satori/go.uuid"
+	"sync"
+	"os/signal"
+	"syscall"
 )
 
 var configImpl config.Config
+var nameTagQueue = data.NewNameTagQueue()
+var printerQueue = data.NewPrinterQueue()
 
 func main() {
-	//Get Bim directory path
+	//Get Bin directory path
 	filename, _ := osext.Executable()
 	var pos int
 	if pos = strings.LastIndex(filename, "\\"); pos == -1 {
@@ -31,7 +35,7 @@ func main() {
 		}
 	}
 	binDirectory := filename[0:pos] + "/"
-	fmt.Println(binDirectory)
+//	fmt.Println(binDirectory)
 
 	//Make Config
 	configImpl.PrintersFile = binDirectory + "../config/printer.xml"
@@ -40,6 +44,7 @@ func main() {
 	configImpl.ScadDirectory = binDirectory + "../data/scad"
 	configImpl.StlDirectory = binDirectory + "../data/stl"
 	configImpl.GcodeDirectory = binDirectory + "../data/gcode"
+	configDirectory := binDirectory + "../config"
 
 	//Generate Files
 	if _, err := os.Stat(configImpl.ImagesDirectory); os.IsNotExist(err) {
@@ -58,6 +63,10 @@ func main() {
 		fmt.Println("Makeing Gcode Directory")
 		os.MkdirAll(configImpl.GcodeDirectory, 666)
 	}
+	if _, err := os.Stat(configDirectory); os.IsNotExist(err) {
+		fmt.Println("Makeing Config Directory")
+		os.MkdirAll(configDirectory, 666)
+	}
 	if _, err := os.Stat(configImpl.PrintersFile); os.IsNotExist(err) {
 		fmt.Println("Makeing Printers File")
 		os.Create(configImpl.PrintersFile)
@@ -67,20 +76,33 @@ func main() {
 		os.Create(configImpl.QueueFile)
 	}
 
-	nameTagQueue := data.NewNameTagQueue()
+	printerQueue.Load(&configImpl)
 	nameTagQueue.Load(&configImpl)
-	fmt.Printf("%v\n", nameTagQueue)
-
-	nameTagQueue.Add(data.NameTag{Name:"Ben",Id:uuid.NewV1()})
-	nameTagQueue.Add(data.NameTag{Name:"Ben",Id:uuid.NewV1()})
-	nameTagQueue.Add(data.NameTag{Name:"Ben",Id:uuid.NewV1()})
-	nameTagQueue.Save(&configImpl)
+//	printerQueue.Add(data.Printer{Name:"Test"}, &configImpl)
+//	nameTagQueue.Add(data.NameTag{Name:"Ben"}, &configImpl)
 
 	//Start HTTP Server
-/*	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
-	http.HandleFunc("/", serveTemplate)
-	http.HandleFunc("/preview", preview)
-	http.ListenAndServe(":8080", nil)*/
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+		http.HandleFunc("/", serveTemplate)
+		http.HandleFunc("/preview", preview)
+		http.ListenAndServe(":8080", nil)
+	}()
+
+	fmt.Println("HTTP Server Started")
+
+	killchan := make(chan os.Signal, 2)
+	signal.Notify(killchan, os.Interrupt, syscall.SIGTERM)
+	// wait for kill signal
+	<- killchan
+	log.Println("Kill sig!")
+	fmt.Println("Saving")
+	printerQueue.Save(&configImpl)
+	nameTagQueue.Save(&configImpl)
+	os.Exit(0)
 }
 
 func preview(writer http.ResponseWriter, request *http.Request) {
@@ -96,13 +118,18 @@ func preview(writer http.ResponseWriter, request *http.Request) {
 }
 
 func serveTemplate(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println(request.URL.Path)
 	includesPath := path.Join("web", "dynamic", "includes.html")
+	data := data.DataWrapper{}
 	filePath := path.Join("web", "dynamic", request.URL.Path)
 	if (request.URL.Path == "/") {
 		filePath = path.Join("web", "dynamic", "index.html")
+	}else if(request.URL.Path == "/manager") {
+		fmt.Println("Loading manager")
+		filePath = path.Join("web", "dynamic", "manager.html")
+		data.PrinterQueue = printerQueue
+		data.NameTagQueue = nameTagQueue
 	}
-
-//	fmt.Println(filePath)
 
 	info, err := os.Stat(filePath)
 	if err != nil {
@@ -124,7 +151,7 @@ func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err := tmpl.ExecuteTemplate(writer, "main", nil); err != nil {
+	if err := tmpl.ExecuteTemplate(writer, "main", data); err != nil {
 		log.Println(err.Error())
 		http.Error(writer, http.StatusText(500), 500)
 	}

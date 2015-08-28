@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+{{define "main"}}
+<html lang="en">
+<head>
+    <title>Manager</title>
+    {{template "cssIncludes"}}
+</head>
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand page-scroll" href="/">Robostorm Name Tag Auto
+                Printing</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a data-toggle="tab" href="#nameTagsTab">Name Tags</a></li>
+                <li><a data-toggle="tab" href="#printersTab">Printers</a></li>
+                <li><a data-toggle="tab" href="#printServerTab">Print Server</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a id="reload">Reload</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="main container tab-content">
+    <div id="nameTagsTab" class="tab-pane fade in active">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th><label class="control-label">Name</label></th>
+                <th><label class="control-label">STL</label></th>
+                <th><label class="control-label">GCode</label></th>
+                <th><label class="control-label">Printer</label></th>
+
+                <th><label class="control-label">Printing</label></th>
+            </tr>
+            </thead>
+            <tbody>
+            {{range $index, $nameTag := .NameTagQueue.Queue}}
+            <tr class="form-inline">
+                <input type="hidden" value="{{$nameTag.Id}}"/>
+                <td>
+                    <input class="form-control" readonly value="{{$nameTag.Name}}"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly value="{{$nameTag.Stl}}"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly value="{{$nameTag.Gcode}}"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly value="{{$nameTag.Printer}}"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly value="{{$nameTag.Printing}}"/>
+                </td>
+            </tr>
+            {{end}}
+            <tr>
+                <td colspan="6"><a href="/manager/nameTags"
+                                   class="btn btn-success">Edit</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="printersTab" class="tab-pane fade in">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th><label class="control-label">Name</label></th>
+                <th><label class="control-label">Printing</label></th>
+                <th><label class="control-label">Active</label></th>
+                <th><label class="control-label">Done</label></th>
+                <th><label class="control-label">Name Tag</label></th>
+                <th><label class="control-label">IP</label></th>
+                <th><label class="control-label">Port</label></th>
+                <th><label class="control-label">API-Key</label></th>
+                <th><label class="control-label">Config File</label></th>
+            </tr>
+            </thead>
+            <tbody>
+            {{range $index, $printer := .PrinterQueue.Queue}}
+                <tr class="form-inline">
+                    <td>
+                        <input class="form-control form-scale" readonly value="{{$printer.Name}}"/>
+                    </td>
+                    <td>
+                        <input class="form-control" readonly value="{{$printer.Printing}}"/>
+                    </td>
+                    <td>
+                        <input class="form-control" readonly value="{{$printer.Active}}"/>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-info" onclick="donePressed({{$index}})">Done</button>
+                    </td>
+                    <td>
+                        <input class="form-control" readonly value="{{$printer.NameTag}}"/>
+                    </td>
+                    <td>
+                        <input class="form-control" readonly value="{{$printer.Ip}}"/>
+                    </td>
+                    <td>
+                        <input class="form-control" readonly value="{{$printer.Port}}"/>
+                    </td>
+                    <td>
+                        <input class="form-control" readonly value="{{$printer.ApiKey}}"/>
+                    </td>
+                </tr>
+            {{end}}
+            <tr>
+                <td colspan="9"><a href="/manager/printers"
+                                   class="btn btn-success">Edit</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="printServerTab" class="tab-pane fade in">
+
+    </div>
+</div>
+{{template "jsIncludes"}}
+<script src="../static/js/manger.js"></script>
+</body>
+</html>
+{{end}}

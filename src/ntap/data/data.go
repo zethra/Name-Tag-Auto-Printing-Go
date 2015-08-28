@@ -15,6 +15,13 @@ type NameTag struct {
 	Printing         bool
 }
 
+func (nameTag *NameTag) String() string {
+	if(nameTag == nil) {
+		return ""
+	}
+	return nameTag.Name
+}
+
 func (nameTag *NameTag) Export(config     *config.Config) {
 	fmt.Println("Exported")
 }
@@ -28,16 +35,18 @@ func NewNameTagQueue() nameTagQueue {
 	return queue
 }
 
-func (queue *nameTagQueue) Add(nameTag NameTag) {
+func (queue *nameTagQueue) Add(nameTag NameTag, config *config.Config) {
 	queue.Queue = append(queue.Queue, nameTag)
+	queue.Save(config)
 }
 
-func (queue *nameTagQueue) Remove(id uuid.UUID) {
+func (queue *nameTagQueue) Remove(id uuid.UUID, config *config.Config) {
 	for i := 0; i < len(queue.Queue); i++ {
 		if (uuid.Equal(queue.Queue[i].Id, id)) {
 			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
 		}
 	}
+	queue.Save(config)
 }
 
 func (queue *nameTagQueue)Get(i int) *NameTag {
@@ -59,7 +68,7 @@ func (queue *nameTagQueue) Save(config *config.Config) {
 		panic(err)
 		return
 	}
-	fmt.Println(string(xml))
+//	fmt.Println(string(xml))
 	err = ioutil.WriteFile(config.QueueFile, xml, 666)
 	if (err != nil) {
 		panic(err)
@@ -86,45 +95,54 @@ func (queue *nameTagQueue) Load(config *config.Config) {
 
 type Printer struct {
 	Id               uuid.UUID
-	Name, Ip, apiKey string
+	Name, Ip, ApiKey string
 	Port             byte
 	Active, Printing bool
 	NameTag          *NameTag
 }
 
-func (printer *Printer)Slice(config *config.Config) {
+func (printer *Printer)String() string {
+	if(printer == nil) {
+		return ""
+	}
+	return printer.Name
+}
+
+func (printer *Printer) Slice(config *config.Config) {
 	fmt.Println("Sliced")
 }
 
 type printerQueue struct {
-	queue []Printer
+	Queue []Printer `xml:"Printer", json:"Printer"`
 }
 
 func NewPrinterQueue() printerQueue {
-	queue := printerQueue{queue:make([]Printer, 0)}
+	queue := printerQueue{Queue:make([]Printer, 0)}
 	return queue
 }
 
-func (queue *printerQueue) Add(printer Printer) {
-	queue.queue = append(queue.queue, printer)
+func (queue *printerQueue) Add(printer Printer, config *config.Config) {
+	queue.Queue = append(queue.Queue, printer)
+	queue.Save(config)
 }
 
-func (queue *printerQueue) Remove(id uuid.UUID) {
-	for i := 0; i < len(queue.queue); i++ {
-		if (uuid.Equal(queue.queue[i].Id, id)) {
-			queue.queue = append(queue.queue[:i], queue.queue[i + 1:]...)
+func (queue *printerQueue) Remove(id uuid.UUID, config *config.Config) {
+	for i := 0; i < len(queue.Queue); i++ {
+		if (uuid.Equal(queue.Queue[i].Id, id)) {
+			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
 		}
 	}
+	queue.Save(config)
 }
 
 func (queue *printerQueue)Get(i int) *Printer {
-	return &queue.queue[i]
+	return &queue.Queue[i]
 }
 
 func (queue *printerQueue) GetNext() (Printer, error) {
-	for i := 0; i < len(queue.queue); i++ {
-		if (queue.queue[i].Printing == false) {
-			return queue.queue[i], nil
+	for i := 0; i < len(queue.Queue); i++ {
+		if (queue.Queue[i].Printing == false) {
+			return queue.Queue[i], nil
 		}
 	}
 	return Printer{}, errors.New("No printers")
@@ -136,7 +154,7 @@ func (queue *printerQueue) Save(config *config.Config) {
 		panic(err)
 		return
 	}
-	fmt.Println(string(xml))
+//	fmt.Println(string(xml))
 	err = ioutil.WriteFile(config.PrintersFile, xml, 666)
 	if (err != nil) {
 		panic(err)
@@ -158,4 +176,9 @@ func (queue *printerQueue) Load(config *config.Config) {
 		panic(err)
 		return
 	}
+}
+
+type DataWrapper struct {
+	NameTagQueue nameTagQueue
+	PrinterQueue printerQueue
 }
