@@ -1,0 +1,13 @@
+*.o
+*.a
+*.so
+
+*.exe
+*.test
+*.prof
+
+bin
+data
+config/queue.xml
+.idea
+*.iml
