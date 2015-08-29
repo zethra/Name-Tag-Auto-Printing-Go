@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+{{define "main"}}
+<html lang="en">
+<head>
+    <title>Edit Name Tags</title>
+    {{template "cssIncludes"}}
+    <link href="../static/css/manager.css" rel="stylesheet"/>
+</head>
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand page-scroll" href="/">Robostorm Name Tag Auto
+                Printing</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/manager">Back</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container main">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th><label class="control-label">Name</label></th>
+            <th><label class="control-label">STL</label></th>
+            <th><label class="control-label">GCode</label></th>
+            <th><label class="control-label">Printing</label></th>
+        </tr>
+        </thead>
+        <tbody>
+        <form action="/manger/nameTagSubmit">
+            {{range $index, $nameTag := .NameTagQueue.Queue}}
+            <tr class="form-inline">
+                <input type="hidden" value="{{$nameTag.Id}}"/>
+                <td>
+                    <input class="form-control" value="{{$nameTag.Name}}" title="Name"/>
+                </td>
+                <td>
+                    <input class="form-control" value="{{$nameTag.Stl}}" title="Stl"/>
+                </td>
+                <td>
+                    <input class="form-control" value="{{$nameTag.Gcode}}" title="Gcode"/>
+                </td>
+                <td>
+                    <input class="form-control" value="{{$nameTag.Printer}}" title="Printer"/>
+                </td>
+                <td>
+                    <input class="form-control" value="{{$nameTag.Printing}}" title="Printing"/>
+                </td>
+                <td>
+                    <input type="button" class="btn btn-danger delete" value="Delete"/>
+                </td>
+            </tr>
+            {{end}}
+            <tr>
+                <td colspan="6"><input type="submit" value="Save" class="btn btn-success"/></td>
+            </tr>
+        </form>
+        </tbody>
+    </table>
+</div>
+{{template "jsIncludes"}}
+<script src="../static/js/editor.js"></script>
+</body>
+</html>
+{{end}}

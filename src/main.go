@@ -89,6 +89,7 @@ func main() {
 		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 		http.HandleFunc("/", serveTemplate)
 		http.HandleFunc("/preview", preview)
+		http.HandleFunc("/manger/nameTagSubmit", nameTagSubmit)
 		http.ListenAndServe(":8080", nil)
 	}()
 
@@ -124,11 +125,15 @@ func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 	filePath := path.Join("web", "dynamic", request.URL.Path)
 	if (request.URL.Path == "/") {
 		filePath = path.Join("web", "dynamic", "index.html")
-	}else if(request.URL.Path == "/manager") {
-		fmt.Println("Loading manager")
+	} else if(request.URL.Path == "/manager") {
+//		fmt.Println("Loading manager")
 		filePath = path.Join("web", "dynamic", "manager.html")
 		data.PrinterQueue = printerQueue
 		data.NameTagQueue = nameTagQueue
+	} else if(request.URL.Path == "/manager/nameTags") {
+		filePath = path.Join("web", "dynamic", "nameTags.html")
+		data.NameTagQueue = nameTagQueue
+		data.Delete = make([]bool, len(nameTagQueue.Queue))
 	}
 
 	info, err := os.Stat(filePath)
@@ -155,4 +160,9 @@ func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 		log.Println(err.Error())
 		http.Error(writer, http.StatusText(500), 500)
 	}
+}
+
+func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("Name Tags Submited")
+	http.Redirect(writer, request, "/manager", 301)
 }

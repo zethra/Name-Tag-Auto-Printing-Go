@@ -181,4 +181,5 @@ func (queue *printerQueue) Load(config *config.Config) {
 type DataWrapper struct {
 	NameTagQueue nameTagQueue
 	PrinterQueue printerQueue
+	Delete []bool
 }

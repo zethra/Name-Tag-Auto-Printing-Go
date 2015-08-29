@@ -48,25 +48,24 @@
             <tr class="form-inline">
                 <input type="hidden" value="{{$nameTag.Id}}"/>
                 <td>
-                    <input class="form-control" readonly value="{{$nameTag.Name}}"/>
+                    <input class="form-control" readonly value="{{$nameTag.Name}}" title="Name"/>
                 </td>
                 <td>
-                    <input class="form-control" readonly value="{{$nameTag.Stl}}"/>
+                    <input class="form-control" readonly value="{{$nameTag.Stl}}" title="Stl"/>
                 </td>
                 <td>
-                    <input class="form-control" readonly value="{{$nameTag.Gcode}}"/>
+                    <input class="form-control" readonly value="{{$nameTag.Gcode}}" title="Gcode"/>
                 </td>
                 <td>
-                    <input class="form-control" readonly value="{{$nameTag.Printer}}"/>
+                    <input class="form-control" readonly value="{{$nameTag.Printer}}" title="Printer"/>
                 </td>
                 <td>
-                    <input class="form-control" readonly value="{{$nameTag.Printing}}"/>
+                    <input class="form-control" readonly value="{{$nameTag.Printing}}" title="Printing"/>
                 </td>
             </tr>
             {{end}}
             <tr>
-                <td colspan="6"><a href="/manager/nameTags"
-                                   class="btn btn-success">Edit</a></td>
+                <td colspan="6"><a href="/manager/nameTags" class="btn btn-success">Edit</a></td>
             </tr>
             </tbody>
         </table>
@@ -90,34 +89,33 @@
             {{range $index, $printer := .PrinterQueue.Queue}}
                 <tr class="form-inline">
                     <td>
-                        <input class="form-control form-scale" readonly value="{{$printer.Name}}"/>
+                        <input class="form-control form-scale" readonly value="{{$printer.Name}}" title="Name"/>
                     </td>
                     <td>
-                        <input class="form-control" readonly value="{{$printer.Printing}}"/>
+                        <input class="form-control" readonly value="{{$printer.Printing}}" title="Printing"/>
                     </td>
                     <td>
-                        <input class="form-control" readonly value="{{$printer.Active}}"/>
+                        <input class="form-control" readonly value="{{$printer.Active}}" title="Active"/>
                     </td>
                     <td>
                         <button type="button" class="btn btn-info" onclick="donePressed({{$index}})">Done</button>
                     </td>
                     <td>
-                        <input class="form-control" readonly value="{{$printer.NameTag}}"/>
+                        <input class="form-control" readonly value="{{$printer.NameTag}}" title="NameTag"/>
                     </td>
                     <td>
-                        <input class="form-control" readonly value="{{$printer.Ip}}"/>
+                        <input class="form-control" readonly value="{{$printer.Ip}}" title="Ip"/>
                     </td>
                     <td>
-                        <input class="form-control" readonly value="{{$printer.Port}}"/>
+                        <input class="form-control" readonly value="{{$printer.Port}}" title="Port"/>
                     </td>
                     <td>
-                        <input class="form-control" readonly value="{{$printer.ApiKey}}"/>
+                        <input class="form-control" readonly value="{{$printer.ApiKey}}" title="ApiKey"/>
                     </td>
                 </tr>
             {{end}}
             <tr>
-                <td colspan="9"><a href="/manager/printers"
-                                   class="btn btn-success">Edit</a></td>
+                <td colspan="9"><a href="/manager/printers" class="btn btn-success">Edit</a></td>
             </tr>
             </tbody>
         </table>
