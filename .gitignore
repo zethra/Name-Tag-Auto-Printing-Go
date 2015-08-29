@@ -6,7 +6,6 @@
 *.test
 *.prof
 
-bin/
 data/
 config/queue.xml
 .idea
