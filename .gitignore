@@ -10,3 +10,4 @@ data/
 config/queue.xml
 .idea
 *.iml
+src/github.com
