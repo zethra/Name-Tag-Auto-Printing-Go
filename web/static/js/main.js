@@ -96,7 +96,7 @@ function submit() {
         success: function (data) {
             console.log(data);
             $('#name').val("");
-            $('#preview-image').attr('src', 'assets/blank.png');
+            $('#preview-image').attr('src', '../static/assets/blank.png');
             $.notify({
                 message: 'Name Tag Successfully Submitted',
                 icon: 'glyphicon glyphicon-ok'

@@ -33,31 +33,33 @@
             <th><label class="control-label">Name</label></th>
             <th><label class="control-label">STL</label></th>
             <th><label class="control-label">GCode</label></th>
+            <th><label class="control-label">Printer</label></th>
             <th><label class="control-label">Printing</label></th>
         </tr>
         </thead>
         <tbody>
-        <form action="/manger/nameTagSubmit">
+        <form action="/manger/nameTagSubmit" method="post">
             {{range $index, $nameTag := .NameTagQueue.Queue}}
             <tr class="form-inline">
                 <input type="hidden" value="{{$nameTag.Id}}"/>
                 <td>
-                    <input class="form-control" value="{{$nameTag.Name}}" title="Name"/>
+                    <input class="form-control" value="{{$nameTag.Name}}" name="NameTagQueue.Queue.{{$index}}.Name" title="Name"/>
                 </td>
                 <td>
-                    <input class="form-control" value="{{$nameTag.Stl}}" title="Stl"/>
+                    <input class="form-control" value="{{$nameTag.Stl}}" name="NameTagQueue.Queue.{{$index}}.Stl" title="Stl"/>
                 </td>
                 <td>
-                    <input class="form-control" value="{{$nameTag.Gcode}}" title="Gcode"/>
+                    <input class="form-control" value="{{$nameTag.Gcode}}" name="NameTagQueue.Queue.{{$index}}.Gcode" title="Gcode"/>
                 </td>
                 <td>
-                    <input class="form-control" value="{{$nameTag.Printer}}" title="Printer"/>
+                    <input class="form-control" value="{{$nameTag.Printer}}" name="NameTagQueue.Queue.{{$index}}.Printer" title="Printer"/>
                 </td>
                 <td>
-                    <input class="form-control" value="{{$nameTag.Printing}}" title="Printing"/>
+                    <input type="checkbox" value="{{$nameTag.Printing}}" name="NameTagQueue.Queue.{{$index}}.Printing" title="Printing"/>
                 </td>
                 <td>
                     <input type="button" class="btn btn-danger delete" value="Delete"/>
+                    <input type="hidden" name="Delete" value="false">
                 </td>
             </tr>
             {{end}}

@@ -27,7 +27,7 @@ func Preview(name string, config *config.Config) ([]byte, int) {
 		return json, 400
 	}
 
-	image := config.ImagesDirectory + name + ".png"
+	image := config.ImagesDirectory + "/" + name + ".png"
 
 	if _, err := os.Stat(image); err == nil {
 		fmt.Println("Image already exstits")

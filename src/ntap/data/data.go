@@ -17,7 +17,7 @@ type NameTag struct {
 
 func (nameTag *NameTag) String() string {
 	if(nameTag == nil) {
-		return ""
+		return "Not Set"
 	}
 	return nameTag.Name
 }
@@ -47,10 +47,6 @@ func (queue *nameTagQueue) Remove(id uuid.UUID, config *config.Config) {
 		}
 	}
 	queue.Save(config)
-}
-
-func (queue *nameTagQueue)Get(i int) *NameTag {
-	return &queue.Queue[i]
 }
 
 func (queue *nameTagQueue) GetNext() (NameTag, error) {
@@ -103,7 +99,7 @@ type Printer struct {
 
 func (printer *Printer)String() string {
 	if(printer == nil) {
-		return ""
+		return "Not Set"
 	}
 	return printer.Name
 }
@@ -122,6 +118,7 @@ func NewPrinterQueue() printerQueue {
 }
 
 func (queue *printerQueue) Add(printer Printer, config *config.Config) {
+	fmt.Printf("Adding printer: %s\n", printer.Name)
 	queue.Queue = append(queue.Queue, printer)
 	queue.Save(config)
 }
@@ -129,14 +126,11 @@ func (queue *printerQueue) Add(printer Printer, config *config.Config) {
 func (queue *printerQueue) Remove(id uuid.UUID, config *config.Config) {
 	for i := 0; i < len(queue.Queue); i++ {
 		if (uuid.Equal(queue.Queue[i].Id, id)) {
+			fmt.Printf("Removing printer: %s\n", queue.Queue[i].Name)
 			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
 		}
 	}
 	queue.Save(config)
-}
-
-func (queue *printerQueue)Get(i int) *Printer {
-	return &queue.Queue[i]
 }
 
 func (queue *printerQueue) GetNext() (Printer, error) {

@@ -14,10 +14,12 @@ import (
 	"ntap/service"
 
 	"github.com/kardianos/osext"
+	"github.com/gorilla/schema"
 	"path"
 	"sync"
 	"os/signal"
 	"syscall"
+//	"strconv"
 )
 
 var configImpl config.Config
@@ -35,7 +37,7 @@ func main() {
 		}
 	}
 	binDirectory := filename[0:pos] + "/"
-//	fmt.Println(binDirectory)
+	//	fmt.Println(binDirectory)
 
 	//Make Config
 	configImpl.PrintersFile = binDirectory + "../config/printer.xml"
@@ -78,8 +80,8 @@ func main() {
 
 	printerQueue.Load(&configImpl)
 	nameTagQueue.Load(&configImpl)
-//	printerQueue.Add(data.Printer{Name:"Test"}, &configImpl)
-//	nameTagQueue.Add(data.NameTag{Name:"Ben"}, &configImpl)
+	//	printerQueue.Add(data.Printer{Name:"Test"}, &configImpl)
+	//	nameTagQueue.Add(data.NameTag{Name:"Ben"}, &configImpl)
 
 	//Start HTTP Server
 	var wg sync.WaitGroup
@@ -89,6 +91,7 @@ func main() {
 		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 		http.HandleFunc("/", serveTemplate)
 		http.HandleFunc("/preview", preview)
+		http.HandleFunc("/queue/add", addToQueue)
 		http.HandleFunc("/manger/nameTagSubmit", nameTagSubmit)
 		http.ListenAndServe(":8080", nil)
 	}()
@@ -98,7 +101,7 @@ func main() {
 	killchan := make(chan os.Signal, 2)
 	signal.Notify(killchan, os.Interrupt, syscall.SIGTERM)
 	// wait for kill signal
-	<- killchan
+	<-killchan
 	log.Println("Kill sig!")
 	fmt.Println("Saving")
 	printerQueue.Save(&configImpl)
@@ -119,21 +122,20 @@ func preview(writer http.ResponseWriter, request *http.Request) {
 }
 
 func serveTemplate(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println(request.URL.Path)
+//	fmt.Println(request.URL.Path)
 	includesPath := path.Join("web", "dynamic", "includes.html")
 	data := data.DataWrapper{}
 	filePath := path.Join("web", "dynamic", request.URL.Path)
 	if (request.URL.Path == "/") {
 		filePath = path.Join("web", "dynamic", "index.html")
-	} else if(request.URL.Path == "/manager") {
-//		fmt.Println("Loading manager")
+	} else if (request.URL.Path == "/manager") {
+		//		fmt.Println("Loading manager")
 		filePath = path.Join("web", "dynamic", "manager.html")
 		data.PrinterQueue = printerQueue
 		data.NameTagQueue = nameTagQueue
-	} else if(request.URL.Path == "/manager/nameTags") {
+	} else if (request.URL.Path == "/manager/nameTags") {
 		filePath = path.Join("web", "dynamic", "nameTags.html")
 		data.NameTagQueue = nameTagQueue
-		data.Delete = make([]bool, len(nameTagQueue.Queue))
 	}
 
 	info, err := os.Stat(filePath)
@@ -162,7 +164,41 @@ func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func addToQueue(writer http.ResponseWriter, request *http.Request) {
+	name := request.FormValue("name")
+	if(name == "") {
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	nameTag := data.NameTag{Name:name}
+	nameTagQueue.Add(nameTag, &configImpl)
+}
+
 func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {
+	defer http.Redirect(writer, request, "/manager", 301)
 	fmt.Println("Name Tags Submited")
-	http.Redirect(writer, request, "/manager", 301)
+	err := request.ParseForm()
+	if err != nil {
+		fmt.Println("Parsing form data failed:", err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	wrapper := new(data.DataWrapper)
+	decoder := schema.NewDecoder()
+	err = decoder.Decode(wrapper, request.PostForm)
+	if err != nil {
+		fmt.Println("Decoding form data failed:", err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	for i := 0; i < len(wrapper.NameTagQueue.Queue); i++ {
+		if (len(wrapper.NameTagQueue.Queue) >= i+1 && wrapper.NameTagQueue.Queue[i].Name != "") {
+			if (len(wrapper.Delete) >= i+1 && wrapper.Delete[i] == true) {
+				nameTagQueue.Remove(wrapper.NameTagQueue.Queue[i].Id, &configImpl)
+			} else {
+				nameTagQueue.Queue[i] = wrapper.NameTagQueue.Queue[i]
+			}
+		}
+	}
+	fmt.Println("Data saved")
 }
