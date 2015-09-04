@@ -26,7 +26,7 @@
         </div>
     </div>
 </nav>
-<div class="container main">
+<div class="container main dataTableContainer">
     <table class="table table-striped">
         <thead>
         <tr>
@@ -38,7 +38,7 @@
         </tr>
         </thead>
         <tbody>
-        <form action="/manger/nameTagSubmit" method="post">
+        <form action="/manager/nameTagSubmit" method="post">
             {{range $index, $nameTag := .NameTagQueue.Queue}}
             <tr class="form-inline">
                 <input type="hidden" value="{{$nameTag.Id}}"/>

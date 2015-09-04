@@ -73,4 +73,8 @@ table a {
 
 .editButtonContainer {
     text-align: right;
-}z
+}
+
+.dataTableContainer {
+    margin-left: 50px;
+}

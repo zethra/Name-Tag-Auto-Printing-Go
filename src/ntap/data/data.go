@@ -17,7 +17,7 @@ type NameTag struct {
 
 func (nameTag *NameTag) String() string {
 	if(nameTag == nil) {
-		return "Not Set"
+		return ""
 	}
 	return nameTag.Name
 }
@@ -36,16 +36,20 @@ func NewNameTagQueue() nameTagQueue {
 }
 
 func (queue *nameTagQueue) Add(nameTag NameTag, config *config.Config) {
+	fmt.Println("Adding name tag: ", nameTag.Name)
 	queue.Queue = append(queue.Queue, nameTag)
+	fmt.Printf("Name tags: %v\n", queue)
 	queue.Save(config)
 }
 
 func (queue *nameTagQueue) Remove(id uuid.UUID, config *config.Config) {
 	for i := 0; i < len(queue.Queue); i++ {
 		if (uuid.Equal(queue.Queue[i].Id, id)) {
+			fmt.Println("Removing name tag: ", queue.Queue[i].Name)
 			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
 		}
 	}
+	fmt.Printf("Name tags: %v\n", queue)
 	queue.Save(config)
 }
 
@@ -91,15 +95,15 @@ func (queue *nameTagQueue) Load(config *config.Config) {
 
 type Printer struct {
 	Id               uuid.UUID
-	Name, Ip, ApiKey string
-	Port             byte
+	Name, Ip, ApiKey, ConfigFile string
+	Port             int
 	Active, Printing bool
 	NameTag          *NameTag
 }
 
 func (printer *Printer)String() string {
 	if(printer == nil) {
-		return "Not Set"
+		return ""
 	}
 	return printer.Name
 }
@@ -120,6 +124,7 @@ func NewPrinterQueue() printerQueue {
 func (queue *printerQueue) Add(printer Printer, config *config.Config) {
 	fmt.Printf("Adding printer: %s\n", printer.Name)
 	queue.Queue = append(queue.Queue, printer)
+	fmt.Printf("Name tags: %v\n", queue)
 	queue.Save(config)
 }
 
@@ -130,6 +135,7 @@ func (queue *printerQueue) Remove(id uuid.UUID, config *config.Config) {
 			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
 		}
 	}
+	fmt.Printf("Name tags: %v\n", queue)
 	queue.Save(config)
 }
 

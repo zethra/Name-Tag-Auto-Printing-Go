@@ -26,7 +26,7 @@
         </div>
     </div>
 </nav>
-<div class="container main">
+<div class="container main dataTableContainer">
     <form method="post" action="/manager/printersSubmit" enctype="multipart/form-data">
         <table class="table table-striped">
             <thead>
@@ -41,31 +41,38 @@
             </tr>
             </thead>
             <tbody>
-            {{range $index, $nameTag := .NameTagQueue.Queue}}
+            {{range $index, $printer := .PrinterQueue.Queue}}
             <tr class="form-inline">
                 <input name="" type="hidden" value="${printer.id}"/>
                 <td>
-                    <input name="" class="form-control" title=""/>
+                    <input name="PrinterQueue.Queue.{{$index}}.Name" value="{{$printer.Name}}" class="form-control"
+                           title="Name"/>
                 </td>
                 <td>
-                    <input name="" type="checkbox" title=""/>
+                    <input name="PrinterQueue.Queue.{{$index}}.Printing" {{if $printer.Printing}}checked{{end}}
+                           type="checkbox" title="Printing"/>
                 </td>
                 <td>
-                    <input name="" type="checkbox" title=""/>
+                    <input name="PrinterQueue.Queue.{{$index}}.Active" {{if $printer.Active}}checked{{end}}
+                           type="checkbox" title="Active"/>
                 </td>
                 <td>
-                    <input name="" class="form-control" title=""/>
+                    <input name="PrinterQueue.Queue.{{$index}}.Ip" value="{{$printer.Ip}}" class="form-control"
+                           title="Ip"/>
                 </td>
                 <td>
-                    <input name="" class="form-control" title=""/>
+                    <input name="PrinterQueue.Queue.{{$index}}.Port" value="{{$printer.Port}}" class="form-control"
+                           title="Port"/>
                 </td>
                 <td>
-                    <input name="" class="form-control" title=""/>
+                    <input name="PrinterQueue.Queue.{{$index}}.ApiKey" value="{{$printer.ApiKey}}" class="form-control"
+                           title="ApiKey"/>
                 </td>
                 <td>
                     <div class="input-group">
-                        <input name="" class="form-control" title=""/>
-                        <input name="" type="file" class="upload" >
+                        <input name="" value="{{$printer.ConfigFile}}" class="form-control" title="ConfigFile"
+                               readonly/>
+                        <input name="PrinterQueue.Queue.{{$index}}.ConfigFile" type="file" class="upload">
                     </div>
                 </td>
                 <td>

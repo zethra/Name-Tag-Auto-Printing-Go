@@ -4,55 +4,8 @@
         <Name>Test</Name>
         <Ip></Ip>
         <Port>0</Port>
-        <Active>false</Active>
+        <Active>true</Active>
         <Printing>false</Printing>
-    </Printer>
-    <Printer>
-        <Id>00000000-0000-0000-0000-000000000000</Id>
-        <Name>Test</Name>
-        <Ip></Ip>
-        <Port>0</Port>
-        <Active>false</Active>
-        <Printing>false</Printing>
-    </Printer>
-    <Printer>
-        <Id>00000000-0000-0000-0000-000000000000</Id>
-        <Name>Test</Name>
-        <Ip></Ip>
-        <Port>0</Port>
-        <Active>false</Active>
-        <Printing>false</Printing>
-    </Printer>
-    <Printer>
-        <Id>00000000-0000-0000-0000-000000000000</Id>
-        <Name>Test</Name>
-        <Ip></Ip>
-        <Port>0</Port>
-        <Active>false</Active>
-        <Printing>false</Printing>
-    </Printer>
-    <Printer>
-        <Id>00000000-0000-0000-0000-000000000000</Id>
-        <Name>Test</Name>
-        <Ip></Ip>
-        <Port>0</Port>
-        <Active>false</Active>
-        <Printing>false</Printing>
-    </Printer>
-    <Printer>
-        <Id>00000000-0000-0000-0000-000000000000</Id>
-        <Name>Test</Name>
-        <Ip></Ip>
-        <Port>0</Port>
-        <Active>false</Active>
-        <Printing>false</Printing>
-    </Printer>
-    <Printer>
-        <Id>00000000-0000-0000-0000-000000000000</Id>
-        <Name>Test</Name>
-        <Ip></Ip>
-        <Port>0</Port>
-        <Active>false</Active>
-        <Printing>false</Printing>
+        <ConfigFile></ConfigFile>
     </Printer>
 </printerQueue>

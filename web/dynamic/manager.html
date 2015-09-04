@@ -30,7 +30,7 @@
         </div>
     </div>
 </nav>
-<div class="main container tab-content">
+<div class="main container tab-content dataTableContainer">
     <div id="nameTagsTab" class="tab-pane fade in active">
         <table class="table table-striped">
             <thead>
@@ -87,32 +87,37 @@
             </thead>
             <tbody>
             {{range $index, $printer := .PrinterQueue.Queue}}
-                <tr class="form-inline">
-                    <td>
-                        <input class="form-control form-scale" readonly value="{{$printer.Name}}" title="Name"/>
-                    </td>
-                    <td>
-                        <input class="form-control" readonly value="{{$printer.Printing}}" title="Printing"/>
-                    </td>
-                    <td>
-                        <input class="form-control" readonly value="{{$printer.Active}}" title="Active"/>
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-info" onclick="donePressed({{$index}})">Done</button>
-                    </td>
-                    <td>
-                        <input class="form-control" readonly value="{{$printer.NameTag}}" title="NameTag"/>
-                    </td>
-                    <td>
-                        <input class="form-control" readonly value="{{$printer.Ip}}" title="Ip"/>
-                    </td>
-                    <td>
-                        <input class="form-control" readonly value="{{$printer.Port}}" title="Port"/>
-                    </td>
-                    <td>
-                        <input class="form-control" readonly value="{{$printer.ApiKey}}" title="ApiKey"/>
-                    </td>
-                </tr>
+            <tr class="form-inline">
+                <td>
+                    <input class="form-control form-scale" readonly value="{{$printer.Name}}" title="Name"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly {{if $printer.Printing}}checked{{end}} type="checkbox"
+                           title="Printing"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly {{if $printer.Active}}checked{{end}} type="checkbox"
+                           title="Active"/>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-info" onclick="donePressed({{$printer.Ip}})">Done</button>
+                </td>
+                <td>
+                    <input class="form-control" readonly value="{{$printer.NameTag}}" title="NameTag"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly value="{{$printer.Ip}}" title="Ip"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly value="{{$printer.Port}}" title="Port"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly value="{{$printer.ApiKey}}" title="ApiKey"/>
+                </td>
+                <td>
+                    <input class="form-control" readonly value="{{$printer.ConfigFile}}" title="ConfigFile"/>
+                </td>
+            </tr>
             {{end}}
             <tr>
                 <td colspan="9"><a href="/manager/printers" class="btn btn-success">Edit</a></td>

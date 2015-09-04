@@ -92,7 +92,8 @@ func main() {
 		http.HandleFunc("/", serveTemplate)
 		http.HandleFunc("/preview", preview)
 		http.HandleFunc("/queue/add", addToQueue)
-		http.HandleFunc("/manger/nameTagSubmit", nameTagSubmit)
+		http.HandleFunc("/manager/nameTagSubmit", nameTagSubmit)
+		http.HandleFunc("/manager/printersSubmit", printersSubmit)
 		http.ListenAndServe(":8080", nil)
 	}()
 
@@ -122,7 +123,7 @@ func preview(writer http.ResponseWriter, request *http.Request) {
 }
 
 func serveTemplate(writer http.ResponseWriter, request *http.Request) {
-//	fmt.Println(request.URL.Path)
+	//	fmt.Println(request.URL.Path)
 	includesPath := path.Join("web", "dynamic", "includes.html")
 	data := data.DataWrapper{}
 	filePath := path.Join("web", "dynamic", request.URL.Path)
@@ -136,6 +137,9 @@ func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 	} else if (request.URL.Path == "/manager/nameTags") {
 		filePath = path.Join("web", "dynamic", "nameTags.html")
 		data.NameTagQueue = nameTagQueue
+	} else if (request.URL.Path == "/manager/printers") {
+		filePath = path.Join("web", "dynamic", "printers.html")
+		data.PrinterQueue = printerQueue
 	}
 
 	info, err := os.Stat(filePath)
@@ -166,7 +170,7 @@ func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 
 func addToQueue(writer http.ResponseWriter, request *http.Request) {
 	name := request.FormValue("name")
-	if(name == "") {
+	if (name == "") {
 		http.Error(writer, http.StatusText(400), 400)
 		return
 	}
@@ -192,13 +196,48 @@ func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	for i := 0; i < len(wrapper.NameTagQueue.Queue); i++ {
-		if (len(wrapper.NameTagQueue.Queue) >= i+1 && wrapper.NameTagQueue.Queue[i].Name != "") {
-			if (len(wrapper.Delete) >= i+1 && wrapper.Delete[i] == true) {
+		if (len(wrapper.NameTagQueue.Queue) >= i + 1 && wrapper.NameTagQueue.Queue[i].Name != "") {
+			if (len(wrapper.Delete) >= i + 1 && wrapper.Delete[i] == true) {
 				nameTagQueue.Remove(wrapper.NameTagQueue.Queue[i].Id, &configImpl)
 			} else {
 				nameTagQueue.Queue[i] = wrapper.NameTagQueue.Queue[i]
 			}
 		}
 	}
-	fmt.Println("Data saved")
+	nameTagQueue.Save(&configImpl)
+	fmt.Println("Name Tags written")
+}
+
+func printersSubmit(writer http.ResponseWriter, request *http.Request)  {
+	defer http.Redirect(writer, request, "/manager#printersTab", 301)
+	fmt.Println("Printers Submited")
+	err := request.ParseMultipartForm(0)
+	if err != nil {
+		fmt.Println("Parsing form data failed:", err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	fmt.Printf("%v\n", request.MultipartForm.Value)
+	wrapper := new(data.DataWrapper)
+	decoder := schema.NewDecoder()
+	err = decoder.Decode(wrapper, request.MultipartForm.Value)
+	if err != nil {
+		fmt.Println("Decoding form data failed:", err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+//	fmt.Printf("%v\n", wrapper.PrinterQueue.Queue)
+	for i := 0; i < len(wrapper.PrinterQueue.Queue); i++ {
+		if (len(wrapper.PrinterQueue.Queue) >= i + 1 && wrapper.PrinterQueue.Queue[i].Name != "") {
+			if (len(wrapper.Delete) >= i + 1 && wrapper.Delete[i] == true) {
+				printerQueue.Remove(wrapper.PrinterQueue.Queue[i].Id, &configImpl)
+			} else {
+				fmt.Printf("Setting printer: %s to positon: %d\n", wrapper.PrinterQueue.Queue[i].Name, i)
+				fmt.Printf("%v\n", wrapper.PrinterQueue.Queue[i])
+				printerQueue.Queue[i] = wrapper.PrinterQueue.Queue[i]
+			}
+		}
+	}
+	printerQueue.Save(&configImpl)
+	fmt.Println("Printers written")
 }
