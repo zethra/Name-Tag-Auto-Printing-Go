@@ -4,19 +4,17 @@ import (
 	"ntap/config"
 	"github.com/satori/go.uuid"
 	"encoding/xml"
-	"errors"
 	"io/ioutil"
 )
 
 type NameTag struct {
 	Id               uuid.UUID
 	Name, Stl, Gcode string
-	Printer          *Printer
-	Printing         bool
+	Printing, Error  bool
 }
 
 func (nameTag *NameTag) String() string {
-	if(nameTag == nil) {
+	if (nameTag == nil) {
 		return ""
 	}
 	return nameTag.Name
@@ -26,23 +24,23 @@ func (nameTag *NameTag) Export(config     *config.Config) {
 	fmt.Println("Exported")
 }
 
-type nameTagQueue struct {
+type NameTagQueue struct {
 	Queue []NameTag `xml:"NameTag", json:"NamneTag"`
 }
 
-func NewNameTagQueue() nameTagQueue {
-	queue := nameTagQueue{Queue:make([]NameTag, 0)}
+func NewNameTagQueue() NameTagQueue {
+	queue := NameTagQueue{Queue:make([]NameTag, 0)}
 	return queue
 }
 
-func (queue *nameTagQueue) Add(nameTag NameTag, config *config.Config) {
+func (queue *NameTagQueue) Add(nameTag NameTag, config *config.Config) {
 	fmt.Println("Adding name tag: ", nameTag.Name)
 	queue.Queue = append(queue.Queue, nameTag)
 	fmt.Printf("Name tags: %v\n", queue)
 	queue.Save(config)
 }
 
-func (queue *nameTagQueue) Remove(id uuid.UUID, config *config.Config) {
+func (queue *NameTagQueue) Remove(id uuid.UUID, config *config.Config) {
 	for i := 0; i < len(queue.Queue); i++ {
 		if (uuid.Equal(queue.Queue[i].Id, id)) {
 			fmt.Println("Removing name tag: ", queue.Queue[i].Name)
@@ -53,22 +51,23 @@ func (queue *nameTagQueue) Remove(id uuid.UUID, config *config.Config) {
 	queue.Save(config)
 }
 
-func (queue *nameTagQueue) GetNext() (NameTag, error) {
+func (queue *NameTagQueue) GetNext() *NameTag {
 	for i := 0; i < len(queue.Queue); i++ {
-		if (queue.Queue[i].Stl == "" || queue.Queue[i].Gcode == "" || queue.Queue[i].Printing == false) {
-			return queue.Queue[i], nil
+		if (queue.Queue[i].Error == false && queue.Queue[i].Stl == "" || queue.Queue[i].Gcode == "" ||
+		queue.Queue[i].Printing == false) {
+			return &queue.Queue[i]
 		}
 	}
-	return NameTag{}, errors.New("No names tags")
+	return nil
 }
 
-func (queue *nameTagQueue) Save(config *config.Config) {
+func (queue *NameTagQueue) Save(config *config.Config) {
 	xml, err := xml.MarshalIndent(queue, "", "    ")
 	if (err != nil) {
 		panic(err)
 		return
 	}
-//	fmt.Println(string(xml))
+	//	fmt.Println(string(xml))
 	err = ioutil.WriteFile(config.QueueFile, xml, 666)
 	if (err != nil) {
 		panic(err)
@@ -76,13 +75,13 @@ func (queue *nameTagQueue) Save(config *config.Config) {
 	}
 }
 
-func (queue *nameTagQueue) Load(config *config.Config) {
+func (queue *NameTagQueue) Load(config *config.Config) {
 	data, err := ioutil.ReadFile(config.QueueFile)
 	if (err != nil) {
 		panic(err)
 		return
 	}
-	if(string(data) == "") {
+	if (string(data) == "") {
 		return
 	}
 	err = xml.Unmarshal(data, queue)
@@ -94,15 +93,15 @@ func (queue *nameTagQueue) Load(config *config.Config) {
 
 
 type Printer struct {
-	Id               uuid.UUID
+	Id                           uuid.UUID
 	Name, Ip, ApiKey, ConfigFile string
-	Port             int
-	Active, Printing bool
-	NameTag          *NameTag
+	Port                         int
+	Active, Printing             bool
+	NameTag                      *NameTag
 }
 
 func (printer *Printer)String() string {
-	if(printer == nil) {
+	if (printer == nil) {
 		return ""
 	}
 	return printer.Name
@@ -112,49 +111,49 @@ func (printer *Printer) Slice(config *config.Config) {
 	fmt.Println("Sliced")
 }
 
-type printerQueue struct {
+type PrinterQueue struct {
 	Queue []Printer `xml:"Printer", json:"Printer"`
 }
 
-func NewPrinterQueue() printerQueue {
-	queue := printerQueue{Queue:make([]Printer, 0)}
+func NewPrinterQueue() PrinterQueue {
+	queue := PrinterQueue{Queue:make([]Printer, 0)}
 	return queue
 }
 
-func (queue *printerQueue) Add(printer Printer, config *config.Config) {
+func (queue *PrinterQueue) Add(printer Printer, config *config.Config) {
 	fmt.Printf("Adding printer: %s\n", printer.Name)
 	queue.Queue = append(queue.Queue, printer)
-	fmt.Printf("Name tags: %v\n", queue)
+	fmt.Printf("Name tags: %v\n", queue.Queue)
 	queue.Save(config)
 }
 
-func (queue *printerQueue) Remove(id uuid.UUID, config *config.Config) {
+func (queue *PrinterQueue) Remove(id uuid.UUID, config *config.Config) {
 	for i := 0; i < len(queue.Queue); i++ {
 		if (uuid.Equal(queue.Queue[i].Id, id)) {
 			fmt.Printf("Removing printer: %s\n", queue.Queue[i].Name)
 			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
 		}
 	}
-	fmt.Printf("Name tags: %v\n", queue)
+	fmt.Printf("Name tags: %v\n", queue.Queue)
 	queue.Save(config)
 }
 
-func (queue *printerQueue) GetNext() (Printer, error) {
+func (queue *PrinterQueue) GetNext() *Printer {
 	for i := 0; i < len(queue.Queue); i++ {
 		if (queue.Queue[i].Printing == false) {
-			return queue.Queue[i], nil
+			return &queue.Queue[i]
 		}
 	}
-	return Printer{}, errors.New("No printers")
+	return nil
 }
 
-func (queue *printerQueue) Save(config *config.Config) {
+func (queue *PrinterQueue) Save(config *config.Config) {
 	xml, err := xml.MarshalIndent(queue, "", "    ")
 	if (err != nil) {
 		panic(err)
 		return
 	}
-//	fmt.Println(string(xml))
+	//	fmt.Println(string(xml))
 	err = ioutil.WriteFile(config.PrintersFile, xml, 666)
 	if (err != nil) {
 		panic(err)
@@ -162,13 +161,13 @@ func (queue *printerQueue) Save(config *config.Config) {
 	}
 }
 
-func (queue *printerQueue) Load(config *config.Config) {
+func (queue *PrinterQueue) Load(config *config.Config) {
 	data, err := ioutil.ReadFile(config.PrintersFile)
 	if (err != nil) {
 		panic(err)
 		return
 	}
-	if(string(data) == "") {
+	if (string(data) == "") {
 		return
 	}
 	err = xml.Unmarshal(data, queue)
@@ -179,7 +178,7 @@ func (queue *printerQueue) Load(config *config.Config) {
 }
 
 type DataWrapper struct {
-	NameTagQueue nameTagQueue
-	PrinterQueue printerQueue
-	Delete []bool
+	NameTagQueue NameTagQueue
+	PrinterQueue PrinterQueue
+	Delete       []bool
 }

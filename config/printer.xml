@@ -1,11 +1,12 @@
-<printerQueue>
+<PrinterQueue>
     <Printer>
         <Id>00000000-0000-0000-0000-000000000000</Id>
         <Name>Test</Name>
-        <Ip></Ip>
-        <Port>0</Port>
+        <Ip>127.0.0.1</Ip>
+        <ApiKey>88730606C84C40DD9D552DDB583B9E07</ApiKey>
+        <ConfigFile></ConfigFile>
+        <Port>5000</Port>
         <Active>true</Active>
         <Printing>false</Printing>
-        <ConfigFile></ConfigFile>
     </Printer>
-</printerQueue>
+</PrinterQueue>

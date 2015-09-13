@@ -33,7 +33,7 @@
             <th><label class="control-label">Name</label></th>
             <th><label class="control-label">STL</label></th>
             <th><label class="control-label">GCode</label></th>
-            <th><label class="control-label">Printer</label></th>
+            <th><label class="control-label">Has Error</label></th>
             <th><label class="control-label">Printing</label></th>
         </tr>
         </thead>
@@ -52,10 +52,10 @@
                     <input class="form-control" value="{{$nameTag.Gcode}}" name="NameTagQueue.Queue.{{$index}}.Gcode" title="Gcode"/>
                 </td>
                 <td>
-                    <input class="form-control" value="{{$nameTag.Printer}}" name="NameTagQueue.Queue.{{$index}}.Printer" title="Printer"/>
+                    <input type="checkbox" value="{{$nameTag.Error}}" name="NameTagQueue.Queue.{{$index}}.Error" title="Error"/>
                 </td>
                 <td>
-                    <input type="checkbox" value="{{$nameTag.Printing}}" name="NameTagQueue.Queue.{{$index}}.Printing" title="Printing"/>
+                    <input type="checkbox" {{if $nameTag.Printing}}checked{{end}} name="NameTagQueue.Queue.{{$index}}.Printing" title="Printing"/>
                 </td>
                 <td>
                     <input type="button" class="btn btn-danger delete" value="Delete"/>

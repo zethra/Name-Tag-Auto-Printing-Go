@@ -20,6 +20,7 @@ import (
 	"os/signal"
 	"syscall"
 //	"strconv"
+	"ntap/printServer"
 )
 
 var configImpl config.Config
@@ -39,6 +40,9 @@ func main() {
 	binDirectory := filename[0:pos] + "/"
 	//	fmt.Println(binDirectory)
 
+	//Set debug mode
+	configImpl.Debug = false
+
 	//Make Config
 	configImpl.PrintersFile = binDirectory + "../config/printer.xml"
 	configImpl.QueueFile = binDirectory + "../config/queue.xml"
@@ -46,6 +50,7 @@ func main() {
 	configImpl.ScadDirectory = binDirectory + "../data/scad"
 	configImpl.StlDirectory = binDirectory + "../data/stl"
 	configImpl.GcodeDirectory = binDirectory + "../data/gcode"
+	configImpl.DefaultConfig = binDirectory + "../data/scad/mendel.ini"
 	configDirectory := binDirectory + "../config"
 
 	//Generate Files
@@ -96,14 +101,18 @@ func main() {
 		http.HandleFunc("/manager/printersSubmit", printersSubmit)
 		http.ListenAndServe(":8080", nil)
 	}()
-
 	fmt.Println("HTTP Server Started")
+
+	//Start Print Server
+	printServer.Start(5, &nameTagQueue, &printerQueue, &configImpl)
 
 	killchan := make(chan os.Signal, 2)
 	signal.Notify(killchan, os.Interrupt, syscall.SIGTERM)
 	// wait for kill signal
 	<-killchan
 	log.Println("Kill sig!")
+	fmt.Println("Stopping Print Server")
+	printServer.Stop()
 	fmt.Println("Saving")
 	printerQueue.Save(&configImpl)
 	nameTagQueue.Save(&configImpl)
@@ -187,6 +196,7 @@ func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, http.StatusText(500), 500)
 		return
 	}
+	configImpl.DebugLog(request.MultipartForm.Value)
 	wrapper := new(data.DataWrapper)
 	decoder := schema.NewDecoder()
 	err = decoder.Decode(wrapper, request.PostForm)
@@ -208,7 +218,7 @@ func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {
 	fmt.Println("Name Tags written")
 }
 
-func printersSubmit(writer http.ResponseWriter, request *http.Request)  {
+func printersSubmit(writer http.ResponseWriter, request *http.Request) {
 	defer http.Redirect(writer, request, "/manager#printersTab", 301)
 	fmt.Println("Printers Submited")
 	err := request.ParseMultipartForm(0)
@@ -217,7 +227,7 @@ func printersSubmit(writer http.ResponseWriter, request *http.Request)  {
 		http.Error(writer, http.StatusText(500), 500)
 		return
 	}
-	fmt.Printf("%v\n", request.MultipartForm.Value)
+	configImpl.DebugLog(request.MultipartForm.Value)
 	wrapper := new(data.DataWrapper)
 	decoder := schema.NewDecoder()
 	err = decoder.Decode(wrapper, request.MultipartForm.Value)
@@ -226,7 +236,7 @@ func printersSubmit(writer http.ResponseWriter, request *http.Request)  {
 		http.Error(writer, http.StatusText(400), 400)
 		return
 	}
-//	fmt.Printf("%v\n", wrapper.PrinterQueue.Queue)
+	//	fmt.Printf("%v\n", wrapper.PrinterQueue.Queue)
 	for i := 0; i < len(wrapper.PrinterQueue.Queue); i++ {
 		if (len(wrapper.PrinterQueue.Queue) >= i + 1 && wrapper.PrinterQueue.Queue[i].Name != "") {
 			if (len(wrapper.Delete) >= i + 1 && wrapper.Delete[i] == true) {

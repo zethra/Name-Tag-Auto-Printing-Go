@@ -1,11 +1,19 @@
 package config
+import "log"
 
 type Config struct {
 	PrintersFile,
 	QueueFile,
-	DataDirectory,
 	ImagesDirectory,
 	ScadDirectory,
 	StlDirectory,
-	GcodeDirectory string
+	GcodeDirectory,
+	DefaultConfig string
+	Debug bool
+}
+
+func (config *Config) DebugLog(i interface{}) {
+	if(config.Debug) {
+		log.Println(i)
+	}
 }
