@@ -122,6 +122,7 @@ func Slice(nameTag *data.NameTag, printer *data.Printer, config *config.Config) 
 }
 
 func Upload(nameTag *data.NameTag, printer *data.Printer, config *config.Config) error {
+	fmt.Println("Uploading Gcode...")
 	uri := fmt.Sprintf("http://%s:%d/api/files/local", printer.Ip, printer.Port)
 	file, err := os.Open(config.GcodeDirectory + "/" + nameTag.Gcode)
 	if err != nil {
@@ -172,10 +173,26 @@ func Upload(nameTag *data.NameTag, printer *data.Printer, config *config.Config)
 		log.Println(err)
 	}
 	resp.Body.Close()
-	fmt.Println(resp.StatusCode)
-	//fmt.Println(resp.Header)
-	fmt.Println(body)
+	fmt.Printf("Upload finnished: %d\n", resp.StatusCode)
+	config.DebugLog(body)
 	return nil
+}
+
+func Delete(nameTag data.NameTag, printer data.Printer, config *config.Config) {
+	fmt.Printf("Sending deleting request for %s to printer %s", nameTag, printer)
+	uri := fmt.Sprintf("http://%s:%d/api/files/local", printer.Ip, printer.Port)
+	request, err := http.NewRequest("DELETE", uri, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+	request.Header.Add("X-Api-Key", printer.ApiKey)
+	client := &http.Client{}
+	resp, err := client.Do(request)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Delete finnished: %d\n", resp.StatusCode)
+
 }
 
 func exe_cmd(cmd string, wg *sync.WaitGroup) {

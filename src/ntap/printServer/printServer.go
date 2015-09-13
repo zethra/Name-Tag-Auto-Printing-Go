@@ -10,7 +10,7 @@ import (
 )
 
 var Quit chan struct {}
-var Timer time.Ticker
+var Timer *time.Ticker
 
 func Start(interval time.Duration, nameTagQueue *data.NameTagQueue, printerQueue *data.PrinterQueue, config *config.Config) {
 	Quit = make(chan struct {})
@@ -33,8 +33,15 @@ printerQueue *data.PrinterQueue, config *config.Config) {
 				continue
 			}
 			var nameTag *data.NameTag
+			getNew:
 			if (printer.NameTag != nil && printer.NameTag.Error == false) {
-				nameTag = printer.NameTag
+				fmt.Printf("%v\n", printer.NameTag)
+				tag, err := nameTagQueue.Find(printer.NameTag.Id, config)
+				if(err != nil) {
+					printer.NameTag.Error = true
+					goto getNew
+				}
+				nameTag = tag
 			} else {
 				nameTag = nameTagQueue.GetNext()
 				if (nameTag == nil) {

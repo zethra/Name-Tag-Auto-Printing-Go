@@ -65,11 +65,11 @@ window.onload = function() {
     }
 };
 
-function donePressed(row) {
-    var ip = $('input[name="printers[' + row + '].ip"]').val();
+function donePressed(ip) {
+    //var ip = $('input[name="printers.' + row + '.ip"]').val();
     console.log(ip);
     $.ajax({
-        url:'/ntap/response',
+        url:'/response',
         type: "POST",
         data: {
             printer:ip

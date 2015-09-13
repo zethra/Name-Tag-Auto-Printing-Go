@@ -5,6 +5,7 @@ import (
 	"github.com/satori/go.uuid"
 	"encoding/xml"
 	"io/ioutil"
+	"errors"
 )
 
 type NameTag struct {
@@ -49,6 +50,15 @@ func (queue *NameTagQueue) Remove(id uuid.UUID, config *config.Config) {
 	}
 	fmt.Printf("Name tags: %v\n", queue)
 	queue.Save(config)
+}
+
+func (queue *NameTagQueue) Find(id uuid.UUID, config *config.Config) (*NameTag, error) {
+	for i := 0; i < len(queue.Queue); i++ {
+		if (uuid.Equal(queue.Queue[i].Id, id)) {
+			return &queue.Queue[i], nil
+		}
+	}
+	return &NameTag{}, errors.New("No name tag found\n")
 }
 
 func (queue *NameTagQueue) GetNext() *NameTag {
@@ -136,6 +146,15 @@ func (queue *PrinterQueue) Remove(id uuid.UUID, config *config.Config) {
 	}
 	fmt.Printf("Name tags: %v\n", queue.Queue)
 	queue.Save(config)
+}
+
+func (queue *PrinterQueue) FindByIp(ip string, config *config.Config) (*Printer, error) {
+	for i := 0; i < len(queue.Queue); i++ {
+		if (queue.Queue[i].Ip == ip) {
+			return &queue.Queue[i], nil
+		}
+	}
+	return &Printer{}, errors.New("No Printer found")
 }
 
 func (queue *PrinterQueue) GetNext() *Printer {

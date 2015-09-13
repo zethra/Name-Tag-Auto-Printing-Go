@@ -21,6 +21,7 @@ import (
 	"syscall"
 //	"strconv"
 	"ntap/printServer"
+	"github.com/satori/go.uuid"
 )
 
 var configImpl config.Config
@@ -99,6 +100,7 @@ func main() {
 		http.HandleFunc("/queue/add", addToQueue)
 		http.HandleFunc("/manager/nameTagSubmit", nameTagSubmit)
 		http.HandleFunc("/manager/printersSubmit", printersSubmit)
+		http.HandleFunc("/response", printerResponse)
 		http.ListenAndServe(":8080", nil)
 	}()
 	fmt.Println("HTTP Server Started")
@@ -183,7 +185,7 @@ func addToQueue(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, http.StatusText(400), 400)
 		return
 	}
-	nameTag := data.NameTag{Name:name}
+	nameTag := data.NameTag{Id:uuid.NewV1(), Name:name}
 	nameTagQueue.Add(nameTag, &configImpl)
 }
 
@@ -196,7 +198,9 @@ func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, http.StatusText(500), 500)
 		return
 	}
-	configImpl.DebugLog(request.MultipartForm.Value)
+	if(request.MultipartForm != nil && request.MultipartForm.Value != nil) {
+		configImpl.DebugLog(request.MultipartForm.Value)
+	}
 	wrapper := new(data.DataWrapper)
 	decoder := schema.NewDecoder()
 	err = decoder.Decode(wrapper, request.PostForm)
@@ -227,7 +231,9 @@ func printersSubmit(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, http.StatusText(500), 500)
 		return
 	}
-	configImpl.DebugLog(request.MultipartForm.Value)
+	if(request.MultipartForm != nil && request.MultipartForm.Value != nil) {
+		configImpl.DebugLog(request.MultipartForm.Value)
+	}
 	wrapper := new(data.DataWrapper)
 	decoder := schema.NewDecoder()
 	err = decoder.Decode(wrapper, request.MultipartForm.Value)
@@ -250,4 +256,32 @@ func printersSubmit(writer http.ResponseWriter, request *http.Request) {
 	}
 	printerQueue.Save(&configImpl)
 	fmt.Println("Printers written")
+}
+
+func printerResponse(writer http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
+	ip := request.FormValue("printer")
+	fmt.Println("Recived DONE respone form printer with IP: ", ip)
+	printer, err := printerQueue.FindByIp(ip, &configImpl)
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	oldVal := printer.Printing
+	printer.Printing = false
+	fmt.Printf("Changed printing status of printer with IP %s form %t to %t", printer.Ip, oldVal, printer.Printing)
+	if(printer.NameTag != nil) {
+		nameTag, err := nameTagQueue.Find(printer.NameTag.Id, &configImpl)
+		if(err != nil) {
+			fmt.Println(err)
+			printer.NameTag = nil
+			return
+		}
+		go service.Delete(*nameTag, *printer, &configImpl)
+		nameTagQueue.Remove(nameTag.Id, &configImpl)
+		printer.NameTag = nil
+		return
+	}
+	fmt.Println("Printer has not name tag")
 }

@@ -93,12 +93,10 @@
                     <input class="form-control form-scale" readonly value="{{$printer.Name}}" title="Name"/>
                 </td>
                 <td>
-                    <input class="form-control" readonly {{if $printer.Printing}}checked{{end}} type="checkbox"
-                           title="Printing"/>
+                    <input readonly {{if $printer.Printing}}checked{{end}} type="checkbox" title="Printing"/>
                 </td>
                 <td>
-                    <input class="form-control" readonly {{if $printer.Active}}checked{{end}} type="checkbox"
-                           title="Active"/>
+                    <input readonly {{if $printer.Active}}checked{{end}} type="checkbox" title="Active"/>
                 </td>
                 <td>
                     <button type="button" class="btn btn-info" onclick="donePressed({{$printer.Ip}})">Done</button>

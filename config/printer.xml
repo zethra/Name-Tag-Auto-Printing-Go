@@ -7,6 +7,14 @@
         <ConfigFile></ConfigFile>
         <Port>5000</Port>
         <Active>true</Active>
-        <Printing>false</Printing>
+        <Printing>true</Printing>
+        <NameTag>
+            <Id>2ef6ae16-5a4b-11e5-b9a1-240a649e66e5</Id>
+            <Name>Popper</Name>
+            <Stl>Popper.stl</Stl>
+            <Gcode>Popper.gcode</Gcode>
+            <Printing>true</Printing>
+            <Error>false</Error>
+        </NameTag>
     </Printer>
 </PrinterQueue>
