@@ -6,7 +6,7 @@
         <ApiKey>88730606C84C40DD9D552DDB583B9E07</ApiKey>
         <ConfigFile></ConfigFile>
         <Port>5000</Port>
-        <Active>true</Active>
+        <Active>false</Active>
         <Printing>false</Printing>
     </Printer>
 </PrinterQueue>

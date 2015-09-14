@@ -22,6 +22,8 @@ import (
 //	"strconv"
 	"ntap/printServer"
 	"github.com/satori/go.uuid"
+	"encoding/json"
+	"errors"
 )
 
 var configImpl config.Config
@@ -94,10 +96,18 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		//Mappings
 		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 		http.HandleFunc("/", serveTemplate)
 		http.HandleFunc("/preview", preview)
-		http.HandleFunc("/queue/add", addToQueue)
+		http.HandleFunc("/queue/add", addNameTag)
+		http.HandleFunc("/queue/update", updateNameTag)
+		http.HandleFunc("/queue/delete", deleteNameTag)
+		http.HandleFunc("/queue/getAll", getAllNameTags)
+		http.HandleFunc("/printers/add", addPrinter)
+		http.HandleFunc("/printers/update", updateNameTag)
+		http.HandleFunc("/printers/delete", deletePrinter)
+		http.HandleFunc("/printers/getAll", getAllPrinters)
 		http.HandleFunc("/manager/nameTagSubmit", nameTagSubmit)
 		http.HandleFunc("/manager/printersSubmit", printersSubmit)
 		http.HandleFunc("/response", printerResponse)
@@ -121,17 +131,7 @@ func main() {
 	os.Exit(0)
 }
 
-func preview(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("Recieved preview request")
-	output, code := service.Preview(request.FormValue("name"), &configImpl)
-	fmt.Println("Server output: " + string(output))
-	if (code != 200) {
-		http.Error(writer, string(output), code)
-		return
-	}
-	writer.Header().Set("Content-Type", "application/json")
-	writer.Write(output)
-}
+//Templates
 
 func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 	//	fmt.Println(request.URL.Path)
@@ -179,14 +179,200 @@ func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func addToQueue(writer http.ResponseWriter, request *http.Request) {
-	name := request.FormValue("name")
-	if (name == "") {
+//API
+
+func preview(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("Recieved preview request")
+	output, code := service.Preview(request.FormValue("name"), &configImpl)
+	fmt.Println("Server output: " + string(output))
+	if (code != 200) {
+		http.Error(writer, string(output), code)
+		return
+	}
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(output)
+}
+
+func addNameTag(writer http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
+	nameTag := new(data.NameTag)
+	decoder := schema.NewDecoder()
+	err := decoder.Decode(nameTag, request.Form)
+	fmt.Println(request.Form)
+	if(err != nil) {
+		log.Println(err)
 		http.Error(writer, http.StatusText(400), 400)
 		return
 	}
-	nameTag := data.NameTag{Id:uuid.NewV1(), Name:name}
-	nameTagQueue.Add(nameTag, &configImpl)
+	if (nameTag.Name == "") {
+		log.Println(errors.New("No Name Provided"))
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	nameTag.Id = uuid.NewV1()
+	nameTagQueue.Add(*nameTag, &configImpl)
+	json, err := json.MarshalIndent(nameTagQueue.Queue, "", "    ")
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	writer.Write(json)
+}
+
+func updateNameTag(writer http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
+	nameTag := new(data.NameTag)
+	decoder := schema.NewDecoder()
+	err := decoder.Decode(nameTag, request.Form)
+	fmt.Println(request.Form)
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	if (nameTag.Name == "") {
+		log.Println(errors.New("No Name Provided"))
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	nameTag.Id = uuid.NewV1()
+	err = nameTagQueue.Update(*nameTag, &configImpl)
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	json, err := json.MarshalIndent(nameTagQueue.Queue, "", "    ")
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	writer.Write(json)
+}
+
+func deleteNameTag(writer http.ResponseWriter, request *http.Request) {
+	idText := request.FormValue("id")
+	id, err := uuid.FromString(idText)
+	if (err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	err = nameTagQueue.Remove(id, &configImpl)
+	if (err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+	}
+	json, err := json.MarshalIndent(nameTagQueue.Queue, "", "    ")
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	writer.Write(json)
+}
+
+func getAllNameTags(writer http.ResponseWriter, request *http.Request) {
+	json, err := json.MarshalIndent(nameTagQueue.Queue, "", "    ")
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	writer.Write(json)
+}
+
+func addPrinter(writer http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
+	printer := new(data.Printer)
+	decoder := schema.NewDecoder()
+	err := decoder.Decode(printer, request.Form)
+	fmt.Println(request.Form)
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	if (printer.Name == "") {
+		log.Println(errors.New("No Name Provided"))
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	printer.Id = uuid.NewV1()
+	printerQueue.Add(*printer, &configImpl)
+	json, err := json.MarshalIndent(printerQueue.Queue, "", "    ")
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	writer.Write(json)
+}
+
+func updatePrinter(writer http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
+	printer := new(data.Printer)
+	decoder := schema.NewDecoder()
+	err := decoder.Decode(printer, request.Form)
+	fmt.Println(request.Form)
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	if (printer.Name == "") {
+		log.Println(errors.New("No Name Provided"))
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	printer.Id = uuid.NewV1()
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	err = printerQueue.Update(*printer, &configImpl)
+	json, err := json.MarshalIndent(printerQueue.Queue, "", "    ")
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	writer.Write(json)
+}
+
+func deletePrinter(writer http.ResponseWriter, request *http.Request) {
+	idText := request.FormValue("id")
+	id, err := uuid.FromString(idText)
+	if (err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+		return
+	}
+	err = printerQueue.Remove(id, &configImpl)
+	if (err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(400), 400)
+	}
+	json, err := json.MarshalIndent(printerQueue.Queue, "", "    ")
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	writer.Write(json)
+}
+
+func getAllPrinters(writer http.ResponseWriter, request *http.Request) {
+	json, err := json.MarshalIndent(printerQueue.Queue, "", "    ")
+	if(err != nil) {
+		log.Println(err)
+		http.Error(writer, http.StatusText(500), 500)
+		return
+	}
+	writer.Write(json)
 }
 
 func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {

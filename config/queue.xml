@@ -1,1 +1,10 @@
-<NameTagQueue></NameTagQueue>
+<NameTagQueue>
+    <NameTag>
+        <Id>44d02025-5b2c-11e5-8958-240a649e66e5</Id>
+        <Name>Andrew</Name>
+        <Stl></Stl>
+        <Gcode></Gcode>
+        <Printing>false</Printing>
+        <Error>false</Error>
+    </NameTag>
+</NameTagQueue>

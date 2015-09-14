@@ -37,15 +37,33 @@ func (queue *NameTagQueue) Add(nameTag NameTag, config *config.Config) {
 	queue.Save(config)
 }
 
-func (queue *NameTagQueue) Remove(id uuid.UUID, config *config.Config) {
+func (queue *NameTagQueue) Update(nameTag NameTag, config *config.Config) error {
+	err := errors.New("No name tag found")
 	for i := 0; i < len(queue.Queue); i++ {
-		if (uuid.Equal(queue.Queue[i].Id, id)) {
-			fmt.Println("Removing name tag: ", queue.Queue[i].Name)
-			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
+		if (uuid.Equal(queue.Queue[i].Id, nameTag.Id)) {
+			fmt.Println("Updating name tag: ", queue.Queue[i].Name)
+			nameTag.Id = queue.Queue[i].Id
+			queue.Queue[i] = nameTag
+			err = nil
 		}
 	}
 	fmt.Printf("Name tags: %v\n", queue.Queue)
 	queue.Save(config)
+	return err
+}
+
+func (queue *NameTagQueue) Remove(id uuid.UUID, config *config.Config) error {
+	err := errors.New("No name tag found")
+	for i := 0; i < len(queue.Queue); i++ {
+		if (uuid.Equal(queue.Queue[i].Id, id)) {
+			fmt.Println("Removing name tag: ", queue.Queue[i].Name)
+			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
+			err = nil
+		}
+	}
+	fmt.Printf("Name tags: %v\n", queue.Queue)
+	queue.Save(config)
+	return err
 }
 
 func (queue *NameTagQueue) Find(id uuid.UUID, config *config.Config) (*NameTag, error) {
@@ -129,19 +147,37 @@ func NewPrinterQueue() PrinterQueue {
 func (queue *PrinterQueue) Add(printer Printer, config *config.Config) {
 	fmt.Printf("Adding printer: %s\n", printer.Name)
 	queue.Queue = append(queue.Queue, printer)
-	fmt.Printf("Name tags: %v\n", queue.Queue)
+	fmt.Printf("Printers: %v\n", queue.Queue)
 	queue.Save(config)
 }
 
-func (queue *PrinterQueue) Remove(id uuid.UUID, config *config.Config) {
+func (queue *PrinterQueue) Update(printer Printer, config *config.Config) error {
+	err := errors.New("No printer found")
+	for i := 0; i < len(queue.Queue); i++ {
+		if (uuid.Equal(queue.Queue[i].Id, printer.Id)) {
+			fmt.Printf("Updating printer: %s\n", queue.Queue[i].Name)
+			printer.Id = queue.Queue[i].Id
+			queue.Queue[i] = printer
+			err = nil
+		}
+	}
+	fmt.Printf("Printers: %v\n", queue.Queue)
+	queue.Save(config)
+	return err
+}
+
+func (queue *PrinterQueue) Remove(id uuid.UUID, config *config.Config) error {
+	err := errors.New("No printer found")
 	for i := 0; i < len(queue.Queue); i++ {
 		if (uuid.Equal(queue.Queue[i].Id, id)) {
 			fmt.Printf("Removing printer: %s\n", queue.Queue[i].Name)
 			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
+			err = nil
 		}
 	}
-	fmt.Printf("Name tags: %v\n", queue.Queue)
+	fmt.Printf("Printers: %v\n", queue.Queue)
 	queue.Save(config)
+	return err
 }
 
 func (queue *PrinterQueue) FindByIp(ip string, config *config.Config) (*Printer, error) {
@@ -155,7 +191,7 @@ func (queue *PrinterQueue) FindByIp(ip string, config *config.Config) (*Printer,
 
 func (queue *PrinterQueue) GetNext() *Printer {
 	for i := 0; i < len(queue.Queue); i++ {
-		if (queue.Queue[i].Printing == false) {
+		if (queue.Queue[i].Active == true && queue.Queue[i].Printing == false) {
 			return &queue.Queue[i]
 		}
 	}
