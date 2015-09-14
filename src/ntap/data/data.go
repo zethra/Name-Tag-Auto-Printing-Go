@@ -21,10 +21,6 @@ func (nameTag *NameTag) String() string {
 	return nameTag.Name
 }
 
-func (nameTag *NameTag) Export(config     *config.Config) {
-	fmt.Println("Exported")
-}
-
 type NameTagQueue struct {
 	Queue []NameTag `xml:"NameTag", json:"NamneTag"`
 }
@@ -37,7 +33,7 @@ func NewNameTagQueue() NameTagQueue {
 func (queue *NameTagQueue) Add(nameTag NameTag, config *config.Config) {
 	fmt.Println("Adding name tag: ", nameTag.Name)
 	queue.Queue = append(queue.Queue, nameTag)
-	fmt.Printf("Name tags: %v\n", queue)
+	fmt.Printf("Name tags: %v\n", queue.Queue)
 	queue.Save(config)
 }
 
@@ -48,7 +44,7 @@ func (queue *NameTagQueue) Remove(id uuid.UUID, config *config.Config) {
 			queue.Queue = append(queue.Queue[:i], queue.Queue[i + 1:]...)
 		}
 	}
-	fmt.Printf("Name tags: %v\n", queue)
+	fmt.Printf("Name tags: %v\n", queue.Queue)
 	queue.Save(config)
 }
 

@@ -268,9 +268,11 @@ func printerResponse(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, http.StatusText(400), 400)
 		return
 	}
+	defer nameTagQueue.Save(&configImpl)
+	defer printerQueue.Save(&configImpl)
 	oldVal := printer.Printing
 	printer.Printing = false
-	fmt.Printf("Changed printing status of printer with IP %s form %t to %t", printer.Ip, oldVal, printer.Printing)
+	fmt.Printf("Changed printing status of printer with IP %s form %t to %t\n", printer.Ip, oldVal, printer.Printing)
 	if(printer.NameTag != nil) {
 		nameTag, err := nameTagQueue.Find(printer.NameTag.Id, &configImpl)
 		if(err != nil) {

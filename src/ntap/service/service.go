@@ -179,25 +179,29 @@ func Upload(nameTag *data.NameTag, printer *data.Printer, config *config.Config)
 }
 
 func Delete(nameTag data.NameTag, printer data.Printer, config *config.Config) {
-	fmt.Printf("Sending deleting request for %s to printer %s", nameTag, printer)
-	uri := fmt.Sprintf("http://%s:%d/api/files/local", printer.Ip, printer.Port)
+	fmt.Printf("Sending deleting request for %s to printer %s\n", nameTag.Name, printer.Name)
+	uri := fmt.Sprintf("http://%s:%d/api/files/local/%s", printer.Ip, printer.Port, nameTag.Gcode)
 	request, err := http.NewRequest("DELETE", uri, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
 	request.Header.Add("X-Api-Key", printer.ApiKey)
+	data, err := httputil.DumpRequest(request, true)
+	if err == nil {
+		config.DebugLog(data)
+	} else {
+		config.DebugLog(err)
+	}
 	client := &http.Client{}
 	resp, err := client.Do(request)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Printf("Delete finnished: %d\n", resp.StatusCode)
-
 }
 
 func exe_cmd(cmd string, wg *sync.WaitGroup) {
 	fmt.Println("command is: ", cmd, "\n")
-	// splitting head => g++ parts => rest of the command
 	parts := strings.Fields(cmd)
 	head := parts[0]
 	parts = parts[1:len(parts)]
@@ -207,6 +211,6 @@ func exe_cmd(cmd string, wg *sync.WaitGroup) {
 		fmt.Printf("%s\n", err)
 	}
 	fmt.Printf("%s\n", out)
-	wg.Done() // Need to signal to waitgroup that this goroutine is done
+	wg.Done()
 }
 
