@@ -11,3 +11,4 @@ config/queue.xml
 .idea
 *.iml
 src/github.com
+/web/static/images/*
