@@ -1,2 +1,12 @@
-# Name-Tag-Auto-Printing-Go
-A Rewrite the ["original" Name Tag app](https://github.com/Robostorm/Nametag-Auto-Printing "Name-Tag-Auto-Printing") in Go..... because I'm bored
+# Name Tag Auto Printing
+
+##Printer
+<pre>
+type Printer struct {
+	Id                           uuid.UUID
+	Name, Ip, ApiKey, ConfigFile string
+	Port                         int
+	Active, Printing             bool
+	NameTag                      *NameTag
+}
+</pre>
