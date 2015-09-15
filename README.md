@@ -37,6 +37,16 @@ GET /queue/add
  - **printing** - printing or not - boolean
  - **error** - error or not - boolean
 
+###Update Name Tag
+GET /queue/update
+####Form parameters:
+ - **id** - id of name tag to change - string
+ - **name** - name tag name (required) - string
+ - **stl** - stl location - string
+ - **gcode** - gcode location - string
+ - **printing** - printing or not - boolean
+ - **error** - error or not - boolean
+
 ###Add Printer
 GET /printers/add
 ####Form parameters:
@@ -48,4 +58,14 @@ GET /printers/add
  - **active** - active or not - boolean
  - **printing** - printing or not - boolean
 
-
+###Update Printer
+GET /printers/update
+####Form parameters:
+ - **id** - id of printer to change - string
+ - **name** - printer name (required) - string
+ - **ip** - printer ip - string
+ - **port** - printer port - integer
+ - **apiKey** - octoprint api key - string
+ - **configFile** - slic3r config file path - string
+ - **active** - active or not - boolean
+ - **printing** - printing or not - boolean
