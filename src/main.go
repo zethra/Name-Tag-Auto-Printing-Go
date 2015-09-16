@@ -165,13 +165,7 @@ func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	tmpl, err := template.ParseFiles(includesPath, filePath)
-	if err != nil {
-		// Log the detailed error
-		log.Println(err.Error())
-		// Return a generic "Internal Server Error" message
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 
 	if err := tmpl.ExecuteTemplate(writer, "main", data); err != nil {
 		log.Println(err.Error())
@@ -199,24 +193,17 @@ func addNameTag(writer http.ResponseWriter, request *http.Request) {
 	decoder := schema.NewDecoder()
 	err := decoder.Decode(nameTag, request.Form)
 	fmt.Println(request.Form)
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-		return
-	}
+	if(check(err, 400, &writer)){return }
 	if (nameTag.Name == "") {
 		log.Println(errors.New("No Name Provided"))
 		http.Error(writer, http.StatusText(400), 400)
 		return
 	}
 	nameTag.Id = uuid.NewV1()
+	nameTag.State = "Waiting"
 	nameTagQueue.Add(*nameTag, &configImpl)
 	json, err := json.MarshalIndent(nameTagQueue.Queue, "", "    ")
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 	writer.Write(json)
 }
 
@@ -224,63 +211,39 @@ func updateNameTag(writer http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
 	nameTag := new(data.NameTag)
 	decoder := schema.NewDecoder()
+	id := request.FormValue("id")
+	request.Form.Del("id")
 	err := decoder.Decode(nameTag, request.Form)
 	fmt.Println(request.Form)
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-		return
-	}
+	if(check(err, 400, &writer)){return }
 	if (nameTag.Name == "") {
 		log.Println(errors.New("No Name Provided"))
 		http.Error(writer, http.StatusText(400), 400)
 		return
 	}
-	nameTag.Id = uuid.NewV1()
+	nameTag.Id, err = uuid.FromString(id)
+	if(check(err, 400, &writer)){return }
 	err = nameTagQueue.Update(*nameTag, &configImpl)
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-		return
-	}
+	if(check(err, 400, &writer)){return }
 	json, err := json.MarshalIndent(nameTagQueue.Queue, "", "    ")
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 	writer.Write(json)
 }
 
 func deleteNameTag(writer http.ResponseWriter, request *http.Request) {
 	idText := request.FormValue("id")
 	id, err := uuid.FromString(idText)
-	if (err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-		return
-	}
+	if(check(err, 400, &writer)){return }
 	err = nameTagQueue.Remove(id, &configImpl)
-	if (err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-	}
+	if(check(err, 400, &writer)){return }
 	json, err := json.MarshalIndent(nameTagQueue.Queue, "", "    ")
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 	writer.Write(json)
 }
 
 func getAllNameTags(writer http.ResponseWriter, request *http.Request) {
 	json, err := json.MarshalIndent(nameTagQueue.Queue, "", "    ")
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 	writer.Write(json)
 }
 
@@ -290,11 +253,7 @@ func addPrinter(writer http.ResponseWriter, request *http.Request) {
 	decoder := schema.NewDecoder()
 	err := decoder.Decode(printer, request.Form)
 	fmt.Println(request.Form)
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-		return
-	}
+	if(check(err, 400, &writer)){return }
 	if (printer.Name == "") {
 		log.Println(errors.New("No Name Provided"))
 		http.Error(writer, http.StatusText(400), 400)
@@ -303,11 +262,7 @@ func addPrinter(writer http.ResponseWriter, request *http.Request) {
 	printer.Id = uuid.NewV1()
 	printerQueue.Add(*printer, &configImpl)
 	json, err := json.MarshalIndent(printerQueue.Queue, "", "    ")
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 	writer.Write(json)
 }
 
@@ -315,63 +270,39 @@ func updatePrinter(writer http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
 	printer := new(data.Printer)
 	decoder := schema.NewDecoder()
+	id := request.FormValue("id")
+	request.Form.Del("id")
 	err := decoder.Decode(printer, request.Form)
 	fmt.Println(request.Form)
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-		return
-	}
+	if(check(err, 400, &writer)){return }
 	if (printer.Name == "") {
 		log.Println(errors.New("No Name Provided"))
 		http.Error(writer, http.StatusText(400), 400)
 		return
 	}
-	printer.Id = uuid.NewV1()
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-		return
-	}
+	printer.Id, err = uuid.FromString(id)
+	if(check(err, 400, &writer)){return }
 	err = printerQueue.Update(*printer, &configImpl)
+	if(check(err, 400, &writer)){return }
 	json, err := json.MarshalIndent(printerQueue.Queue, "", "    ")
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 	writer.Write(json)
 }
 
 func deletePrinter(writer http.ResponseWriter, request *http.Request) {
 	idText := request.FormValue("id")
 	id, err := uuid.FromString(idText)
-	if (err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-		return
-	}
+	if(check(err, 400, &writer)){return }
 	err = printerQueue.Remove(id, &configImpl)
-	if (err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-	}
+	if(check(err, 400, &writer)){return }
 	json, err := json.MarshalIndent(printerQueue.Queue, "", "    ")
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 	writer.Write(json)
 }
 
 func getAllPrinters(writer http.ResponseWriter, request *http.Request) {
 	json, err := json.MarshalIndent(printerQueue.Queue, "", "    ")
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 	writer.Write(json)
 }
 
@@ -379,11 +310,7 @@ func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {
 	defer http.Redirect(writer, request, "/manager", 301)
 	fmt.Println("Name Tags Submited")
 	err := request.ParseForm()
-	if err != nil {
-		fmt.Println("Parsing form data failed:", err)
-		http.Error(writer, http.StatusText(500), 500)
-		return
-	}
+	if(check(err, 500, &writer)){return }
 	if(request.MultipartForm != nil && request.MultipartForm.Value != nil) {
 		configImpl.DebugLog(request.MultipartForm.Value)
 	}
@@ -449,11 +376,7 @@ func printerResponse(writer http.ResponseWriter, request *http.Request) {
 	ip := request.FormValue("printer")
 	fmt.Println("Recived DONE respone form printer with IP: ", ip)
 	printer, err := printerQueue.FindByIp(ip, &configImpl)
-	if(err != nil) {
-		log.Println(err)
-		http.Error(writer, http.StatusText(400), 400)
-		return
-	}
+	if(check(err, 400, &writer)){return }
 	defer nameTagQueue.Save(&configImpl)
 	defer printerQueue.Save(&configImpl)
 	oldVal := printer.Printing
@@ -472,4 +395,13 @@ func printerResponse(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	fmt.Println("Printer has not name tag")
+}
+
+func check(err error, code int,  writer *http.ResponseWriter) bool {
+	if(err != nil) {
+		log.Println(err)
+		http.Error(*writer, http.StatusText(code), code)
+		return true
+	}
+	return false
 }

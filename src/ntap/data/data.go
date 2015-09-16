@@ -9,9 +9,9 @@ import (
 )
 
 type NameTag struct {
-	Id               uuid.UUID
-	Name, Stl, Gcode string
-	Printing, Error  bool
+	Id                      uuid.UUID
+	Name, Stl, Gcode, State string
+	Printing, Error         bool
 }
 
 func (nameTag *NameTag) String() string {
@@ -117,11 +117,11 @@ func (queue *NameTagQueue) Load(config *config.Config) {
 
 
 type Printer struct {
-	Id                           uuid.UUID
-	Name, Ip, ApiKey, ConfigFile string
-	Port                         int
-	Active, Printing             bool
-	NameTag                      *NameTag
+	Id                                  uuid.UUID
+	Name, Ip, ApiKey, ConfigFile, State string
+	Port                                int
+	Active, Printing                    bool
+	NameTag                             *NameTag
 }
 
 func (printer *Printer)String() string {

@@ -3,7 +3,8 @@ var data = [];
 var NameTagsModel = function (nameTags) {
     this.nameTags = ko.observableArray(ko.utils.arrayMap(nameTags, function (nameTag) {
         return {
-            Name: nameTag.Name
+            Name: nameTag.Name,
+            State: nameTag.State
         };
     }));
 };

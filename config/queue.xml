@@ -1,18 +1,1 @@
-<NameTagQueue>
-    <NameTag>
-        <Id>44d02025-5b2c-11e5-8958-240a649e66e5</Id>
-        <Name>Andrew</Name>
-        <Stl></Stl>
-        <Gcode></Gcode>
-        <Printing>false</Printing>
-        <Error>false</Error>
-    </NameTag>
-    <NameTag>
-        <Id>b8a94b99-5b4f-11e5-aa9c-240a649e66e5</Id>
-        <Name>Test</Name>
-        <Stl></Stl>
-        <Gcode></Gcode>
-        <Printing>false</Printing>
-        <Error>false</Error>
-    </NameTag>
-</NameTagQueue>
+<NameTagQueue></NameTagQueue>

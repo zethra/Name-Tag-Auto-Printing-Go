@@ -5,8 +5,9 @@
         <Ip>127.0.0.1</Ip>
         <ApiKey>88730606C84C40DD9D552DDB583B9E07</ApiKey>
         <ConfigFile></ConfigFile>
+        <State></State>
         <Port>5000</Port>
-        <Active>false</Active>
+        <Active>true</Active>
         <Printing>false</Printing>
     </Printer>
 </PrinterQueue>

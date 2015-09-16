@@ -9,11 +9,11 @@ import (
 	"log"
 )
 
-var Quit chan struct {}
+var Quit chan struct{}
 var Timer *time.Ticker
 
 func Start(interval time.Duration, nameTagQueue *data.NameTagQueue, printerQueue *data.PrinterQueue, config *config.Config) {
-	Quit = make(chan struct {})
+	Quit = make(chan struct{})
 	go run(interval, nameTagQueue, printerQueue, config)
 }
 
@@ -37,7 +37,7 @@ printerQueue *data.PrinterQueue, config *config.Config) {
 			if (printer.NameTag != nil && printer.NameTag.Error == false) {
 				fmt.Printf("%v\n", printer.NameTag)
 				tag, err := nameTagQueue.Find(printer.NameTag.Id, config)
-				if(err != nil) {
+				if (err != nil) {
 					printer.NameTag.Error = true
 					goto getNew
 				}
@@ -49,31 +49,38 @@ printerQueue *data.PrinterQueue, config *config.Config) {
 				}
 				printer.NameTag = nameTag
 			}
+			nameTag.State = "Assigned to printer"
 			if (nameTag.Stl == "") {
+				nameTag.State = "Rendering STL"
 				err := service.Export(nameTag, config)
 				if (err != nil) {
 					fmt.Println(err)
 					nameTag.Error = true
+					nameTag.State = "Has Error"
 					goto save
 				}
 			}
 			if (nameTag.Gcode == "") {
+				nameTag.State = "Slicing"
 				err := service.Slice(nameTag, printer, config)
 				if (err != nil) {
 					fmt.Println(err)
 					nameTag.Error = true
+					nameTag.State = "Has Error"
 					goto save
 				}
 			}
-			if(nameTag.Printing == false && printer.Printing == false) {
+			if (nameTag.Printing == false && printer.Printing == false) {
+				nameTag.State = "Uploading"
 				err := service.Upload(nameTag, printer, config)
-				if(err != nil) {
+				if (err != nil) {
 					log.Println(err)
 					printer.Active = false
 					goto save
 				}
 				printer.Printing = true
 				nameTag.Printing = true
+				nameTag.State = "Printing"
 			}
 			save:
 			printerQueue.Save(config)
