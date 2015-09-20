@@ -142,9 +142,9 @@ func serveTemplate(writer http.ResponseWriter, request *http.Request) {
 		filePath = path.Join("web", "dynamic", "index.html")
 	} else if (request.URL.Path == "/manager") {
 		//		fmt.Println("Loading manager")
-		filePath = path.Join("web", "dynamic", "manager.html")
-		data.PrinterQueue = printerQueue
-		data.NameTagQueue = nameTagQueue
+		filePath = path.Join("web", "dynamic", "amanager.html")
+//		data.PrinterQueue = printerQueue
+//		data.NameTagQueue = nameTagQueue
 	} else if (request.URL.Path == "/manager/nameTags") {
 		filePath = path.Join("web", "dynamic", "nameTags.html")
 		data.NameTagQueue = nameTagQueue
@@ -308,7 +308,7 @@ func getAllPrinters(writer http.ResponseWriter, request *http.Request) {
 
 func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {
 	defer http.Redirect(writer, request, "/manager", 301)
-	fmt.Println("Name Tags Submited")
+	log.Println("Name Tags Submited")
 	err := request.ParseForm()
 	if(check(err, 500, &writer)){return }
 	if(request.MultipartForm != nil && request.MultipartForm.Value != nil) {
@@ -318,14 +318,18 @@ func nameTagSubmit(writer http.ResponseWriter, request *http.Request) {
 	decoder := schema.NewDecoder()
 	err = decoder.Decode(wrapper, request.PostForm)
 	if err != nil {
-		fmt.Println("Decoding form data failed:", err)
+		log.Println("Decoding form data failed:", err)
 		http.Error(writer, http.StatusText(400), 400)
 		return
 	}
 	for i := 0; i < len(wrapper.NameTagQueue.Queue); i++ {
 		if (len(wrapper.NameTagQueue.Queue) >= i + 1 && wrapper.NameTagQueue.Queue[i].Name != "") {
+			log.Println(wrapper.NameTagQueue.Queue[i].Id)
 			if (len(wrapper.Delete) >= i + 1 && wrapper.Delete[i] == true) {
-				nameTagQueue.Remove(wrapper.NameTagQueue.Queue[i].Id, &configImpl)
+				err := nameTagQueue.Remove(wrapper.NameTagQueue.Queue[i].Id, &configImpl)
+				if(err != nil) {
+					log.Println(err)
+				}
 			} else {
 				nameTagQueue.Queue[i] = wrapper.NameTagQueue.Queue[i]
 			}

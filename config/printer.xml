@@ -7,7 +7,7 @@
         <ConfigFile></ConfigFile>
         <State></State>
         <Port>5000</Port>
-        <Active>true</Active>
+        <Active>false</Active>
         <Printing>false</Printing>
     </Printer>
 </PrinterQueue>
